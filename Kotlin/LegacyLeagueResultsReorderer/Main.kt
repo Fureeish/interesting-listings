@@ -18,9 +18,10 @@ class PlayerRecord(
 
     companion object {
         fun fromLine(line: String): PlayerRecord {
-            val rawPoints = line.split("|").drop(4).dropLast(1)
+            val rowCells = line.split("|")
+            val rawPoints = rowCells.drop(4).dropLast(1)
 
-            val nameAndSurname = line.split("|")[2].trim()
+            val nameAndSurname = rowCells[2].trim()
             val points = rawPoints.map { it.trim().toIntOrNull() }
 
             val result = PlayerRecord(nameAndSurname, points.toMutableList())
