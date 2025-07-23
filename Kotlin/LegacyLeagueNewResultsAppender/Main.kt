@@ -76,19 +76,21 @@ fun main() {
     val playerSeasonStandings = getPlayerStandings(playerSeasonStandingsPath, SeasonStandingsPlayerRecord)
     val playerLeagueStandings = getPlayerStandings(newestLeagueStandingsPath, LeagueStandingsPlayerRecord)
 
-    playerSeasonStandings.forEach { it.scores += null }
-    val totalLeaguesSoFar = playerSeasonStandings.first().scores.size
+    addNewScoreColumnToAllPlayers(playerSeasonStandings)
+    val numberOfLeaguesSoFar = playerSeasonStandings.first().scores.size
 
-    for (leagueRecord in playerLeagueStandings) {
+    for (newLeagueResult in playerLeagueStandings) {
         /*
          * I'm using `contains` rather than `==` for comparing names
          * because sometimes the file with standings contains some extra HTML
          * for meme purposes.
          */
-        val seasonRecord = playerSeasonStandings.find { it.nameAndSurname.contains(leagueRecord.nameAndSurname) } ?: run {
-            val emptyScoresForAllLeaguesPlayedSoFar = MutableList<Int?>(totalLeaguesSoFar) { null }
+        val seasonRecord = playerSeasonStandings.find {
+            it.nameAndSurname.contains(newLeagueResult.nameAndSurname)
+        } ?: run {
+            val emptyScoresForAllLeaguesPlayedSoFar = MutableList<Int?>(numberOfLeaguesSoFar) { null }
             val standingsForNewPlayer = SeasonStandingsPlayerRecord(
-                leagueRecord.nameAndSurname, emptyScoresForAllLeaguesPlayedSoFar
+                newLeagueResult.nameAndSurname, emptyScoresForAllLeaguesPlayedSoFar
             )
 
             playerSeasonStandings.add(standingsForNewPlayer)
@@ -96,7 +98,7 @@ fun main() {
             standingsForNewPlayer
         }
 
-        seasonRecord.scores.let { it[it.lastIndex] = leagueRecord.pointsScored }
+        seasonRecord.scores.let { it[it.lastIndex] = newLeagueResult.pointsScored }
     }
 
     playerSeasonStandings.sort()
@@ -104,6 +106,10 @@ fun main() {
     for ((index, player) in playerSeasonStandings.withIndex()) {
         println("$COLUMN_SEPARATOR $MATH_MODE ${index + 1}. $MATH_MODE $player")
     }
+}
+
+private fun addNewScoreColumnToAllPlayers(playerSeasonStandings: List<SeasonStandingsPlayerRecord>) {
+    playerSeasonStandings.forEach { it.scores += null }
 }
 
 private fun <T> getPlayerStandings(path: String, factory: FactoryFor<T>): MutableList<T> {
